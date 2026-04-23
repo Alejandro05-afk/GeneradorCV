@@ -11,7 +11,10 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "env": {
+          "EXPO_USE_NEW_ARCH": "1"
+        }
       }
     },
     "production": {
