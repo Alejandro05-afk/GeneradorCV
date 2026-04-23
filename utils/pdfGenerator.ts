@@ -215,6 +215,10 @@ export const sharePDF = async (cvData: CVData): Promise<void> => {
 
 // Genera y comparte el PDF
 export const generateAndSharePDF = async (cvData: CVData): Promise<string> => {
+  const isAvailable = await Sharing.isAvailableAsync();
+  if (!isAvailable) {
+    throw new Error("La función de compartir no está disponible en este dispositivo");
+  }
   const html = generateCVHTML(cvData);
   const { uri } = await Print.printToFileAsync({ html, base64: false });
   await Sharing.shareAsync(uri, {

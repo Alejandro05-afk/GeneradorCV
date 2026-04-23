@@ -15,32 +15,33 @@ export default function PreviewScreen() {
     const [isGenerating, setIsGenerating] = useState(false);
 
     const handleSharePDF = async () => {
-        try {
-            setIsGenerating(true);
-            await generateAndSharePDF(cvData);
-        } catch (error) {
-            Alert.alert("Error", "No se pudo generar el PDF");
-        } finally {
-            setIsGenerating(false);
-        }
-    };
+    try {
+        setIsGenerating(true);
+        await generateAndSharePDF(cvData);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : JSON.stringify(error);
+        Alert.alert("Error compartir", message);
+    } finally {
+        setIsGenerating(false);
+    }
+};
 
-    const handleSavePDF = async () => {
-        try {
-            setIsGenerating(true);
-            const uri = await generateAndSavePDF(cvData);
-            const fileName = uri.split("/").pop() || "CV.pdf";
-            Alert.alert(
-                "PDF Guardado",
-                `Tu CV se ha guardado como:\n${fileName}\n\nPuedes encontrarlo en la carpeta de la app.`,
-                [{ text: "OK" }]
-            );
-        } catch (error) {
-            Alert.alert("Error", "No se pudo guardar el PDF");
-        } finally {
-            setIsGenerating(false);
-        }
-    };
+   const handleSavePDF = async () => {
+    try {
+        setIsGenerating(true);
+        const uri = await generateAndSavePDF(cvData);
+        const fileName = uri.split("/").pop() || "CV.pdf";
+        Alert.alert(
+            "PDF Guardado",
+            `Tu CV se ha guardado como:\n${fileName}\n\nPuedes encontrarlo en la carpeta de la app.`,
+            [{ text: "OK" }]
+        );
+    } catch (error) {
+        Alert.alert("Error", `${error instanceof Error ? error.message : JSON.stringify(error)}`);
+    } finally {
+        setIsGenerating(false);
+    }
+};
 
     return (
         <View style={styles.container}>
