@@ -1,6 +1,5 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import { cacheDirectory, copyAsync, deleteAsync } from "expo-file-system/legacy";
 import { CVData } from "../types/cv.types";
 
 const getSkillLevelColor = (level: string): string => {
@@ -94,11 +93,7 @@ export const generateCVHTML = (cvData: CVData): string => {
       <meta charset="utf-8">
       <title>CV - ${personalInfo.fullName || "Sin nombre"}</title>
       <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
           font-family: Arial, Helvetica, sans-serif;
           font-size: 12px;
@@ -118,16 +113,9 @@ export const generateCVHTML = (cvData: CVData): string => {
           color: #C8102E;
           margin-bottom: 8px;
         }
-        .contact-info {
-          color: #666;
-          font-size: 12px;
-        }
-        .contact-info div {
-          margin-bottom: 2px;
-        }
-        .section {
-          margin-bottom: 24px;
-        }
+        .contact-info { color: #666; font-size: 12px; }
+        .contact-info div { margin-bottom: 2px; }
+        .section { margin-bottom: 24px; }
         .section-title {
           font-size: 14px;
           font-weight: bold;
@@ -135,43 +123,18 @@ export const generateCVHTML = (cvData: CVData): string => {
           margin-bottom: 12px;
           letter-spacing: 1px;
         }
-        .summary-text {
-          font-size: 12px;
-          color: #444;
-          text-align: justify;
-        }
+        .summary-text { font-size: 12px; color: #444; text-align: justify; }
         .item {
           margin-bottom: 16px;
           padding-bottom: 12px;
           border-bottom: 1px solid #eee;
         }
-        .item-title {
-          font-size: 14px;
-          font-weight: bold;
-          color: #333;
-        }
-        .item-subtitle {
-          font-size: 12px;
-          color: #666;
-        }
-        .item-institution {
-          font-size: 12px;
-          color: #888;
-        }
-        .item-date {
-          font-size: 11px;
-          color: #999;
-          font-style: italic;
-        }
-        .item-description {
-          font-size: 11px;
-          color: #555;
-          margin-top: 4px;
-        }
-        .skills-container {
-          display: flex;
-          flex-wrap: wrap;
-        }
+        .item-title { font-size: 14px; font-weight: bold; color: #333; }
+        .item-subtitle { font-size: 12px; color: #666; }
+        .item-institution { font-size: 12px; color: #888; }
+        .item-date { font-size: 11px; color: #999; font-style: italic; }
+        .item-description { font-size: 11px; color: #555; margin-top: 4px; }
+        .skills-container { display: flex; flex-wrap: wrap; }
         .skill-item {
           display: flex;
           align-items: center;
@@ -181,12 +144,7 @@ export const generateCVHTML = (cvData: CVData): string => {
           margin-right: 8px;
           margin-bottom: 8px;
         }
-        .skill-name {
-          font-size: 11px;
-          font-weight: 600;
-          color: #333;
-          margin-right: 6px;
-        }
+        .skill-name { font-size: 11px; font-weight: 600; color: #333; margin-right: 6px; }
         .skill-badge {
           font-size: 9px;
           font-weight: bold;
@@ -205,18 +163,12 @@ export const generateCVHTML = (cvData: CVData): string => {
           ${personalInfo.location ? `<div>Ubicación: ${personalInfo.location}</div>` : ""}
         </div>
       </div>
-
-      ${
-        personalInfo.summary
-          ? `
+      ${personalInfo.summary ? `
         <div class="section">
           <h2 class="section-title">RESUMEN PROFESIONAL</h2>
           <p class="summary-text">${personalInfo.summary}</p>
         </div>
-      `
-          : ""
-      }
-
+      ` : ""}
       ${generateExperienceHTML(experiences)}
       ${generateEducationHTML(education)}
       ${generateSkillsHTML(skills)}
@@ -232,38 +184,28 @@ const getFileName = (cvData: CVData): string => {
   return `CV_${sanitizedName}_${timestamp}.pdf`;
 };
 
+// Genera el PDF y retorna el uri temporal
 export const generatePDF = async (cvData: CVData): Promise<string> => {
   const html = generateCVHTML(cvData);
-  const fileName = getFileName(cvData);
-  const newUri = `${cacheDirectory}${fileName}`;
-
-  const { uri } = await Print.printToFileAsync({
-    html,
-    base64: false,
-  });
-
-  await copyAsync({ from: uri, to: newUri });
-  await deleteAsync(uri, { idempotent: true });
-
-  return newUri;
+  const { uri } = await Print.printToFileAsync({ html, base64: false });
+  return uri;
 };
 
+// Guarda/comparte el PDF usando el uri directo de printToFileAsync
+export const generateAndSavePDF = async (cvData: CVData): Promise<string> => {
+  const html = generateCVHTML(cvData);
+  const { uri } = await Print.printToFileAsync({ html, base64: false });
+  return uri;
+};
+
+// Comparte el PDF directamente
 export const sharePDF = async (cvData: CVData): Promise<void> => {
   const isAvailable = await Sharing.isAvailableAsync();
-
   if (!isAvailable) {
-    throw new Error(
-      "La función de compartir no está disponible en este dispositivo"
-    );
+    throw new Error("La función de compartir no está disponible en este dispositivo");
   }
-
   const html = generateCVHTML(cvData);
-
-  const { uri } = await Print.printToFileAsync({
-    html,
-    base64: false,
-  });
-
+  const { uri } = await Print.printToFileAsync({ html, base64: false });
   await Sharing.shareAsync(uri, {
     mimeType: "application/pdf",
     dialogTitle: "Compartir CV",
@@ -271,40 +213,14 @@ export const sharePDF = async (cvData: CVData): Promise<void> => {
   });
 };
 
+// Genera y comparte el PDF
 export const generateAndSharePDF = async (cvData: CVData): Promise<string> => {
   const html = generateCVHTML(cvData);
-  const fileName = getFileName(cvData);
-  const newUri = `${cacheDirectory}${fileName}`;
-
-  const { uri } = await Print.printToFileAsync({
-    html,
-    base64: false,
-  });
-
-  await copyAsync({ from: uri, to: newUri });
-  await deleteAsync(uri, { idempotent: true });
-
-  await Sharing.shareAsync(newUri, {
+  const { uri } = await Print.printToFileAsync({ html, base64: false });
+  await Sharing.shareAsync(uri, {
     mimeType: "application/pdf",
     dialogTitle: "Compartir CV",
     UTI: "com.adobe.pdf",
   });
-
-  return newUri;
-};
-
-export const generateAndSavePDF = async (cvData: CVData): Promise<string> => {
-  const html = generateCVHTML(cvData);
-  const fileName = getFileName(cvData);
-  const newUri = `${cacheDirectory}${fileName}`;
-
-  const { uri } = await Print.printToFileAsync({
-    html,
-    base64: false,
-  });
-
-  await copyAsync({ from: uri, to: newUri });
-  await deleteAsync(uri, { idempotent: true });
-
-  return newUri;
+  return uri;
 };
