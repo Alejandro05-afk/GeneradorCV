@@ -1,6 +1,6 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import { documentDirectory, copyAsync, deleteAsync } from "expo-file-system/legacy";
+import { cacheDirectory, copyAsync, deleteAsync } from "expo-file-system/legacy";
 import { CVData } from "../types/cv.types";
 
 const getSkillLevelColor = (level: string): string => {
@@ -20,7 +20,7 @@ const getSkillLevelColor = (level: string): string => {
 
 const generateExperienceHTML = (experiences: CVData["experiences"]): string => {
   if (experiences.length === 0) return "";
-  
+
   return `
     <div class="section">
       <h2 class="section-title">EXPERIENCIA LABORAL</h2>
@@ -42,7 +42,7 @@ const generateExperienceHTML = (experiences: CVData["experiences"]): string => {
 
 const generateEducationHTML = (education: CVData["education"]): string => {
   if (education.length === 0) return "";
-  
+
   return `
     <div class="section">
       <h2 class="section-title">EDUCACIÓN</h2>
@@ -64,7 +64,7 @@ const generateEducationHTML = (education: CVData["education"]): string => {
 
 const generateSkillsHTML = (skills: CVData["skills"]): string => {
   if (skills.length === 0) return "";
-  
+
   return `
     <div class="section">
       <h2 class="section-title">HABILIDADES TÉCNICAS</h2>
@@ -206,12 +206,16 @@ export const generateCVHTML = (cvData: CVData): string => {
         </div>
       </div>
 
-      ${personalInfo.summary ? `
+      ${
+        personalInfo.summary
+          ? `
         <div class="section">
           <h2 class="section-title">RESUMEN PROFESIONAL</h2>
           <p class="summary-text">${personalInfo.summary}</p>
         </div>
-      ` : ""}
+      `
+          : ""
+      }
 
       ${generateExperienceHTML(experiences)}
       ${generateEducationHTML(education)}
@@ -230,39 +234,36 @@ const getFileName = (cvData: CVData): string => {
 
 export const generatePDF = async (cvData: CVData): Promise<string> => {
   const html = generateCVHTML(cvData);
-  
   const fileName = getFileName(cvData);
-  const newUri = `${documentDirectory}${fileName}`;
-  
+  const newUri = `${cacheDirectory}${fileName}`;
+
   const { uri } = await Print.printToFileAsync({
     html,
     base64: false,
   });
 
-  await copyAsync({
-    from: uri,
-    to: newUri,
-  });
-  
+  await copyAsync({ from: uri, to: newUri });
   await deleteAsync(uri, { idempotent: true });
-  
+
   return newUri;
 };
 
 export const sharePDF = async (cvData: CVData): Promise<void> => {
   const isAvailable = await Sharing.isAvailableAsync();
-  
+
   if (!isAvailable) {
-    throw new Error("La función de compartir no está disponible en este dispositivo");
+    throw new Error(
+      "La función de compartir no está disponible en este dispositivo"
+    );
   }
-  
+
   const html = generateCVHTML(cvData);
-  
+
   const { uri } = await Print.printToFileAsync({
     html,
     base64: false,
   });
-  
+
   await Sharing.shareAsync(uri, {
     mimeType: "application/pdf",
     dialogTitle: "Compartir CV",
@@ -272,50 +273,38 @@ export const sharePDF = async (cvData: CVData): Promise<void> => {
 
 export const generateAndSharePDF = async (cvData: CVData): Promise<string> => {
   const html = generateCVHTML(cvData);
-  
   const fileName = getFileName(cvData);
-  let newUri = `${documentDirectory}${fileName}`;
-  let uri: string = "";
-  
-  const result = await Print.printToFileAsync({
-    html,
-    base64: false,
-  });
-  uri = result.uri;
-  
-  await copyAsync({
-    from: uri,
-    to: newUri,
-  });
-  
-  await deleteAsync(uri, { idempotent: true });
-  
-  await Sharing.shareAsync(newUri, {
-    mimeType: "application/pdf",
-    dialogTitle: "Compartir CV",
-    UTI: "com.adobe.pdf",
-  });
-  
-  return newUri;
-};
+  const newUri = `${cacheDirectory}${fileName}`;
 
-export const generateAndSavePDF = async (cvData: CVData): Promise<string> => {
-  const html = generateCVHTML(cvData);
-  
-  const fileName = getFileName(cvData);
-  const newUri = `${documentDirectory}${fileName}`;
-  
   const { uri } = await Print.printToFileAsync({
     html,
     base64: false,
   });
 
-  await copyAsync({
-    from: uri,
-    to: newUri,
-  });
-  
+  await copyAsync({ from: uri, to: newUri });
   await deleteAsync(uri, { idempotent: true });
-  
+
+  await Sharing.shareAsync(newUri, {
+    mimeType: "application/pdf",
+    dialogTitle: "Compartir CV",
+    UTI: "com.adobe.pdf",
+  });
+
+  return newUri;
+};
+
+export const generateAndSavePDF = async (cvData: CVData): Promise<string> => {
+  const html = generateCVHTML(cvData);
+  const fileName = getFileName(cvData);
+  const newUri = `${cacheDirectory}${fileName}`;
+
+  const { uri } = await Print.printToFileAsync({
+    html,
+    base64: false,
+  });
+
+  await copyAsync({ from: uri, to: newUri });
+  await deleteAsync(uri, { idempotent: true });
+
   return newUri;
 };
