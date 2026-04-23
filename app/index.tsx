@@ -13,6 +13,7 @@ export default function HomeScreen() {
     cvData.personalInfo.fullName && cvData.personalInfo.email;
   const hasExperience = cvData.experiences.length > 0;
   const hasEducation = cvData.education.length > 0;
+  const hasSkills = cvData.skills.length > 0;
 
   return (
     <ScrollView style={styles.container} scrollEnabled={true}>
@@ -86,6 +87,30 @@ export default function HomeScreen() {
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.push("/education")}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Agregar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Skills Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={styles.sectionNumber}>4</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.sectionTitle}>Habilidades Técnicas</Text>
+            <Text style={[styles.status, hasSkills && styles.statusComplete]}>
+              {hasSkills ? `✓ ${cvData.skills.length} agregada(s)` : "Pendiente"}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push("/skills")}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Agregar</Text>

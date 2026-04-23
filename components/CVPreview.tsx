@@ -7,7 +7,22 @@ interface CVPreviewProps {
 }
 
 export const CVPreview: React.FC<CVPreviewProps> = ({ cvData }) => {
-  const { personalInfo, experiences, education } = cvData;
+  const { personalInfo, experiences, education, skills } = cvData;
+
+  const getSkillLevelColor = (level: string): string => {
+    switch (level) {
+      case "Básico":
+        return "#4CAF50";
+      case "Intermedio":
+        return "#2196F3";
+      case "Avanzado":
+        return "#FF9800";
+      case "Experto":
+        return "#C8102E";
+      default:
+        return "#666666";
+    }
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -73,6 +88,28 @@ export const CVPreview: React.FC<CVPreviewProps> = ({ cvData }) => {
                 )}
               </View>
             ))}
+          </View>
+        )}
+
+        {/* Habilidades Técnicas */}
+        {skills.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>HABILIDADES TÉCNICAS</Text>
+            <View style={styles.skillsContainer}>
+              {skills.map((skill) => (
+                <View key={skill.id} style={styles.skillItem}>
+                  <Text style={styles.skillName}>{skill.name}</Text>
+                  <View
+                    style={[
+                      styles.skillBadge,
+                      { backgroundColor: getSkillLevelColor(skill.level) },
+                    ]}
+                  >
+                    <Text style={styles.skillBadgeText}>{skill.level}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
@@ -167,6 +204,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#34495e",
     lineHeight: 18,
+  },
+  skillsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  skillItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  skillName: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#333333",
+    marginRight: 8,
+  },
+  skillBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  skillBadgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
   emptyState: {
     flex: 1,
